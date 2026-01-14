@@ -4,23 +4,22 @@ pragma solidity ^0.8.20;
 contract SimpleStorage {
     uint256 private storedValue;
     
-    // variabel owner
+    //Ownership
     address public owner;
 
-    // Event OwnerSet
+    //Event Definitions
     event OwnerSet(address indexed oldOwner, address indexed newOwner);
     event ValueUpdated(uint256 newValue);
 
-    // Tentukan owner saat deploy
     constructor() {
         owner = msg.sender;
+        // OwnerSet muncul saat deploy
         emit OwnerSet(address(0), msg.sender);
     }
 
     function setValue(uint256 _value) public {
-        // Opsional: Biasanya hanya owner yang boleh mengubah nilai
-        // require(msg.sender == owner, "Bukan owner"); 
         storedValue = _value;
+        // ValueUpdated muncul saat set value
         emit ValueUpdated(_value);
     }
 
