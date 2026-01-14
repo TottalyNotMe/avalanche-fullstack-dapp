@@ -1,0 +1,24 @@
+{
+  "name": "pamulang-university-short-course",
+  "version": "1.0.0",
+  "description": "Short course ini dirancang untuk membantu peserta **membangun Full Stack dApp sederhana di jaringan Avalanche** dari nol hingga deployment, menggunakan **1 template project yang sama selama 5 hari**.",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/avalanche-indonesia/pamulang-university-short-course.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/avalanche-indonesia/pamulang-university-short-course/issues"
+  },
+  "homepage": "https://github.com/avalanche-indonesia/pamulang-university-short-course#readme"
+}
