@@ -32,7 +32,6 @@
 body {
   margin: 0;
   background-color: var(--dark-bg);
-  /* Background Grid */
   background-image:
     linear-gradient(rgba(0, 255, 65, 0.1) 1px, transparent 1px),
     linear-gradient(90deg, rgba(0, 255, 65, 0.1) 1px, transparent 1px);

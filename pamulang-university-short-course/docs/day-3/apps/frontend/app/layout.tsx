@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import { Providers } from "./provider"; // Pastikan path ini benar sesuai lokasi file providers.tsx Anda
+import { Providers } from "./provider";
 
 export const metadata: Metadata = {
   title: "Dharma Avalanche dApp",
@@ -15,7 +15,6 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        {/* Ini adalah bagian kunci: Providers harus membungkus children */}
         <Providers>
           {children}
         </Providers>

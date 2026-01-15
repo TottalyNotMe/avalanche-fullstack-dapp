@@ -11,7 +11,7 @@ import {
 import { injected } from 'wagmi/connectors';
 
 // ==============================
-// 🔹 CONFIG (Tetap gunakan address Day 2 Anda)
+// CONFIG 
 // ==============================
 const CONTRACT_ADDRESS = '0x56d245c498e855c771ef6388784fe8b15bd9e61f';
 
