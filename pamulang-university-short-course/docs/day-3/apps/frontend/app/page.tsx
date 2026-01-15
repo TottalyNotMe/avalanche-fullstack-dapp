@@ -1,59 +1,137 @@
 'use client';
 
-import { useAccount, useConnect, useDisconnect, useBalance, useChainId } from 'wagmi';
+import { useState, useEffect } from 'react';
+import {
+  useAccount,
+  useConnect,
+  useDisconnect,
+  useReadContract,
+  useWriteContract,
+} from 'wagmi';
 import { injected } from 'wagmi/connectors';
-import { avalancheFuji } from 'wagmi/chains';
-import { formatEther } from 'viem'; // Import ini penting
 
-export default function Home() {
+// ==============================
+// 🔹 CONFIG (Tetap gunakan address Day 2 Anda)
+// ==============================
+const CONTRACT_ADDRESS = '0x56d245c498e855c771ef6388784fe8b15bd9e61f';
+
+const SIMPLE_STORAGE_ABI = [
+  {
+    inputs: [],
+    name: 'getValue',
+    outputs: [{ type: 'uint256' }],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    inputs: [{ name: '_value', type: 'uint256' }],
+    name: 'setValue',
+    outputs: [],
+    stateMutability: 'nonpayable',
+    type: 'function',
+  },
+] as const;
+
+export default function Page() {
   const { address, isConnected } = useAccount();
-  const { connect } = useConnect();
+  const { connect, isPending: isConnecting } = useConnect();
   const { disconnect } = useDisconnect();
-  const chainId = useChainId();
   
-  const { data: balance } = useBalance({
-    address: address,
+  const [inputValue, setInputValue] = useState('');
+  const [mounted, setMounted] = useState(false);
+
+  // Mencegah Hydration Error 
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const {
+    data: value,
+    isLoading: isReading,
+    refetch,
+  } = useReadContract({
+    address: CONTRACT_ADDRESS as `0x${string}`,
+    abi: SIMPLE_STORAGE_ABI,
+    functionName: 'getValue',
   });
 
-  return (
-    <div className="container">
-      <h1>Avalanche dApp</h1>
-      <p className="subtitle">Connect Wallet (Core Wallet)</p>
+  const { writeContract, isPending: isWriting } = useWriteContract();
 
+  const handleSetValue = async () => {
+    if (!inputValue) return;
+    writeContract({
+      address: CONTRACT_ADDRESS as `0x${string}`,
+      abi: SIMPLE_STORAGE_ABI,
+      functionName: 'setValue',
+      args: [BigInt(inputValue)],
+    });
+  };
+
+  const shortenAddress = (addr: string) => `${addr.slice(0, 6)}...${addr.slice(-4)}`;
+
+  // Tunggu sampai komponen mounted di browser sebelum render konten 
+  if (!mounted) return null;
+
+return (
+  <div className="container main-layout">
+    <header className="header-section">
+      <h1>AVALANCHE DAPP</h1>
+      <p className="subtitle">Connect Wallet (Core Wallet)</p>
+      
       {!isConnected ? (
-        <button onClick={() => connect({ connector: injected() })}>
-          Connect Wallet
+        <button onClick={() => connect({ connector: injected() })} disabled={isConnecting}>
+          {isConnecting ? 'CONNECTING...' : 'CONNECT WALLET'}
         </button>
       ) : (
-        <button className="btn-disconnect" onClick={() => disconnect()}>
-          Disconnect
-        </button>
+        <button className="btn-disconnect" onClick={() => disconnect()}>DISCONNECT</button>
       )}
+    </header>
 
-      <div className="card">
-        <p><strong>Status:</strong> 
-          <span id="status" style={{ color: isConnected ? '#4cd137' : 'white' }}>
-            {isConnected ? 'Connected ✅' : 'Not Connected'}
+    <div className="grid-content">
+      {/* Kolom Kiri: Status & Identitas */}
+      <section className="card side-panel">
+        <div className="info-row">
+          <strong>STATUS:</strong>
+          <span style={{ color: isConnected ? "#4cd137" : "white" }}>
+            {isConnected ? "CONNECTED ✅" : "OFFLINE"}
           </span>
-        </p>
-        <p><strong>Wallet Address:</strong></p>
-        <p id="address">{isConnected ? address : '-'}</p>
-        
-        <p><strong>Network:</strong> 
-          <span id="network">
-            {isConnected ? (chainId === avalancheFuji.id ? 'Avalanche Fuji Testnet' : 'Wrong Network ❌') : '-'}
-          </span>
-        </p>
-        
-        <p><strong>Balance:</strong> 
-          <span id="balance">
-            {isConnected && balance ? Number(formatEther(balance.value)).toFixed(4) : '-'}
-          </span> AVAX
-        </p>
-        
-        <p><strong>Nama:</strong> <span>{isConnected ? "Dharma Fathahillah" : "-"}</span></p>
-        <p><strong>NIM:</strong> <span>{isConnected ? "231011401770" : "-"}</span></p>
-      </div>
+        </div>
+        <div className="info-row">
+          <strong>ADDRESS:</strong>
+          <span id="address">{isConnected && address ? shortenAddress(address) : "-"}</span>
+        </div>
+        <div className="footer-id">
+          <p>SYSTEM_USER: DHARMA FATHAHILLAH</p>
+          <p>NIM: 231011401770</p>
+        </div>
+      </section>
+
+      {/* Kolom Kanan: Interaction (Read & Write) */}
+      <section className="card action-panel">
+        <div className="read-section">
+          <strong>CONTRACT VALUE (READ)</strong>
+          <div className="value-display">
+            {isReading ? "..." : value?.toString() || "0"}
+          </div>
+          <button onClick={() => refetch()} className="btn-small">REFRESH VALUE</button>
+        </div>
+
+        <div className="write-section">
+          <strong>UPDATE CONTRACT VALUE</strong>
+          <div className="input-group">
+            <input
+              type="number"
+              placeholder="New value"
+              value={inputValue}
+              onChange={(e) => setInputValue(e.target.value)}
+            />
+            <button onClick={handleSetValue} disabled={isWriting || !isConnected}>
+              {isWriting ? 'UPDATING...' : 'SET VALUE'}
+            </button>
+          </div>
+        </div>
+      </section>
     </div>
-  );
+  </div>
+);
 }

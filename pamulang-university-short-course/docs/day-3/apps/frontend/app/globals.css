@@ -180,3 +180,55 @@ span {
 #address, #balance {
     animation: textGlitch 10s infinite linear;
 }
+.container.main-layout {
+  max-width: 900px; 
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.header-section {
+  text-align: center;
+  border-bottom: 2px dashed var(--neon-green);
+  padding-bottom: 20px;
+}
+
+.grid-content {
+  display: grid;
+  grid-template-columns: 1fr 1.5fr; 
+  gap: 20px;
+}
+
+.info-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 15px;
+  border-bottom: 1px dotted #333;
+  padding-bottom: 5px;
+}
+
+.value-display {
+  font-size: 48px;
+  color: var(--neon-green);
+  text-shadow: 0 0 10px var(--neon-green);
+  margin: 10px 0;
+}
+
+@media (max-width: 768px) {
+  .grid-content {
+    grid-template-columns: 1fr;
+  }
+}
+
+.btn-small {
+  width: auto !important;
+  padding: 5px 15px !important;
+  font-size: 12px !important;
+  margin-top: 5px !important;
+}
+
+.input-group {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+}
