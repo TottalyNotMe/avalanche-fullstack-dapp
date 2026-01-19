@@ -11,11 +11,14 @@ export class BlockchainController {
     async getValue() {
       return this.blockchainService.getLatestValue();
     }
-
-    // GET /blockchain/events
     @Post("events")
-    async getEvents(@Body() body: GetEventsDto) {
+    async getEventsByRange(@Body() body: GetEventsDto) {
       return this.blockchainService.getValueUpdatedEvents(body.fromBlock, body.toBlock);
+    }
+    @Get('events')
+    async getEvents() {
+      return this.blockchainService.getValueUpdatedEvents(50560487, 50560921);
     }
 
 }
+
