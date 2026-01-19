@@ -6,7 +6,6 @@ import { GetEventsDto } from './dto/get-events.dto';
 @Controller('blockchain')
 export class BlockchainController {
   constructor(private readonly blockchainService: BlockchainService) {}
-    // GET /blockchain/value
     @Get("value")
     async getValue() {
       return this.blockchainService.getLatestValue();
