@@ -5,7 +5,6 @@ import {
   useAccount,
   useConnect,
   useDisconnect,
-  useReadContract,
   useWriteContract,
 } from 'wagmi';
 import { injected } from 'wagmi/connectors';
@@ -15,14 +14,8 @@ import { injected } from 'wagmi/connectors';
 // ==============================
 const CONTRACT_ADDRESS = '0x56d245c498e855c771ef6388784fe8b15bd9e61f';
 
+// ABI hanya dibutuhkan untuk Write di Day 5
 const SIMPLE_STORAGE_ABI = [
-  {
-    inputs: [],
-    name: 'getValue',
-    outputs: [{ type: 'uint256' }],
-    stateMutability: 'view',
-    type: 'function',
-  },
   {
     inputs: [{ name: '_value', type: 'uint256' }],
     name: 'setValue',
@@ -40,20 +33,30 @@ export default function Page() {
   const [inputValue, setInputValue] = useState('');
   const [mounted, setMounted] = useState(false);
 
-  // Mencegah Hydration Error 
+  // 🔹 STATE BARU UNTUK DAY 5: Mengambil data dari Backend
+  const [backendValue, setBackendValue] = useState("...");
+  const [isReading, setIsReading] = useState(false);
+
   useEffect(() => {
     setMounted(true);
+    fetchFromBackend(); // Ambil data saat pertama kali load
   }, []);
 
-  const {
-    data: value,
-    isLoading: isReading,
-    refetch,
-  } = useReadContract({
-    address: CONTRACT_ADDRESS as `0x${string}`,
-    abi: SIMPLE_STORAGE_ABI,
-    functionName: 'getValue',
-  });
+  // 🔹 TASK 2: Fungsi Fetch dari Backend API
+  const fetchFromBackend = async () => {
+    setIsReading(true);
+    try {
+      // Menggunakan URL dari .env.local yang Anda buat
+      const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/blockchain/value`);
+      const data = await res.json();
+      setBackendValue(data.value);
+    } catch (error) {
+      console.error("Gagal koneksi ke backend", error);
+      setBackendValue("ERR");
+    } finally {
+      setIsReading(false);
+    }
+  };
 
   const { writeContract, isPending: isWriting } = useWriteContract();
 
@@ -69,69 +72,69 @@ export default function Page() {
 
   const shortenAddress = (addr: string) => `${addr.slice(0, 6)}...${addr.slice(-4)}`;
 
-  // Tunggu sampai komponen mounted di browser sebelum render konten 
   if (!mounted) return null;
 
-return (
-  <div className="container main-layout">
-    <header className="header-section">
-      <h1>AVALANCHE DAPP</h1>
-      <p className="subtitle">Connect Wallet (Core Wallet)</p>
-      
-      {!isConnected ? (
-        <button onClick={() => connect({ connector: injected() })} disabled={isConnecting}>
-          {isConnecting ? 'CONNECTING...' : 'CONNECT WALLET'}
-        </button>
-      ) : (
-        <button className="btn-disconnect" onClick={() => disconnect()}>DISCONNECT</button>
-      )}
-    </header>
+  return (
+    <div className="container main-layout">
+      <header className="header-section">
+        <h1>AVALANCHE DAPP</h1>
+        <p className="subtitle">Full Stack Integration - Day 5</p>
+        
+        {!isConnected ? (
+          <button onClick={() => connect({ connector: injected() })} disabled={isConnecting}>
+            {isConnecting ? 'CONNECTING...' : 'CONNECT WALLET'}
+          </button>
+        ) : (
+          <button className="btn-disconnect" onClick={() => disconnect()}>DISCONNECT</button>
+        )}
+      </header>
 
-    <div className="grid-content">
-      {/* Kolom Kiri: Status & Identitas */}
-      <section className="card side-panel">
-        <div className="info-row">
-          <strong>STATUS:</strong>
-          <span style={{ color: isConnected ? "#4cd137" : "white" }}>
-            {isConnected ? "CONNECTED ✅" : "OFFLINE"}
-          </span>
-        </div>
-        <div className="info-row">
-          <strong>ADDRESS:</strong>
-          <span id="address">{isConnected && address ? shortenAddress(address) : "-"}</span>
-        </div>
-        <div className="footer-id">
-          <p>SYSTEM_USER: DHARMA FATHAHILLAH</p>
-          <p>NIM: 231011401770</p>
-        </div>
-      </section>
-
-      {/* Kolom Kanan: Interaction (Read & Write) */}
-      <section className="card action-panel">
-        <div className="read-section">
-          <strong>CONTRACT VALUE (READ)</strong>
-          <div className="value-display">
-            {isReading ? "..." : value?.toString() || "0"}
+      <div className="grid-content">
+        {/* Kolom Kiri: Status & Identitas */}
+        <section className="card side-panel">
+          <div className="info-row">
+            <strong>STATUS:</strong>
+            <span style={{ color: isConnected ? "#4cd137" : "white" }}>
+              {isConnected ? "CONNECTED ✅" : "OFFLINE"}
+            </span>
           </div>
-          <button onClick={() => refetch()} className="btn-small">REFRESH VALUE</button>
-        </div>
-
-        <div className="write-section">
-          <strong>UPDATE CONTRACT VALUE</strong>
-          <div className="input-group">
-            <input
-              type="number"
-              placeholder="New value"
-              value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
-            />
-            <button onClick={handleSetValue} disabled={isWriting || !isConnected}>
-              {isWriting ? 'UPDATING...' : 'SET VALUE'}
-            </button>
+          <div className="info-row">
+            <strong>ADDRESS:</strong>
+            <span id="address">{isConnected && address ? shortenAddress(address) : "-"}</span>
           </div>
-        </div>
-      </section>
+          <div className="footer-id">
+            <p>SYSTEM_USER: DHARMA FATHAHILLAH</p>
+            <p>NIM: 231011401770</p>
+          </div>
+        </section>
+
+        {/* Kolom Kanan: Interaction */}
+        <section className="card action-panel">
+          <div className="read-section">
+            {/* Mengambil data dari Backend API */}
+            <strong>BACKEND DATA (READ API)</strong>
+            <div className="value-display">
+              {isReading ? "..." : backendValue}
+            </div>
+            <button onClick={fetchFromBackend} className="btn-small">REFRESH FROM API</button>
+          </div>
+
+          <div className="write-section">
+            <strong>UPDATE CONTRACT VALUE</strong>
+            <div className="input-group">
+              <input
+                type="number"
+                placeholder="New value"
+                value={inputValue}
+                onChange={(e) => setInputValue(e.target.value)}
+              />
+              <button onClick={handleSetValue} disabled={isWriting || !isConnected}>
+                {isWriting ? 'UPDATING...' : 'SET VALUE'}
+              </button>
+            </div>
+          </div>
+        </section>
+      </div>
     </div>
-  </div>
-);
+  );
 }
